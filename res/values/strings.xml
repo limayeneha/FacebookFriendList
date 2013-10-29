@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Facebook Friend List</string>
+    <string name="get_started">To get started, log in using Facebook</string>
+    <string name="app_id">534011200010775</string>
+</resources>
