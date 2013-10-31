@@ -1,11 +1,18 @@
 package com.example.FacebookFriendList;
 
+import android.graphics.Typeface;
 import android.support.v4.app.*;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import com.facebook.*;
+import com.facebook.model.GraphUser;
+import model.Friend;
+import org.json.JSONException;
+
+import java.util.List;
 
 public class LoginActivity extends FragmentActivity {
 
@@ -114,7 +121,8 @@ public class LoginActivity extends FragmentActivity {
             if (state.isOpened()) {
                 // If the session state is open:
                 // Show the authenticated fragment
-                showFragment(SELECTION, false);
+                makeMeRequest(session);
+
             } else if (state.isClosed()) {
                 // If the session state is closed:
                 // Show the login fragment
@@ -161,6 +169,32 @@ public class LoginActivity extends FragmentActivity {
             return true;
         }
         return false;
+    }
+
+
+
+    private void makeMeRequest(final Session session) {
+        Request request = Request.newMeRequest(session, new Request.GraphUserCallback() {
+
+            @Override
+            public void onCompleted(GraphUser user, Response response) {
+                if(user==null) return;
+
+                if (session == Session.getActiveSession()) {
+
+                    String token = session.getAccessToken();
+                    List<Friend> friends = Friend.getFriends(LoginActivity.this, token);
+                    showFragment(SELECTION, false);
+
+                }
+                if (response.getError() != null) {
+                    //  handleError(response.getError());
+                }
+            }
+
+        });
+        request.executeAsync();
+
     }
 
 
