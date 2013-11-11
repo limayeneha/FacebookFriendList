@@ -194,6 +194,9 @@ public class LoginActivity extends FragmentActivity {
                     FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
                     ft.show(selectionFragment);
                     ft.commit();
+                    if(token!=null && token.length()>0) selectionFragment.loadFriends();
+
+
 
                 }
                 if (response.getError() != null) {

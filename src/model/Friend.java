@@ -75,10 +75,10 @@ public class Friend {
         final ArrayList<Friend> friends = new ArrayList<Friend>();
 
         if (jo.has(nodeName)) {
-            Friend friend = new Friend();
             final JSONArray appArray = jo.getJSONArray("data");
             final int rlen = appArray.length();
             for (int i = 0; i < rlen; i++) {
+                Friend friend = new Friend();
                 final JSONObject obj = appArray.getJSONObject(i);
                 if (obj.has("name")) friend.setName(obj.getString("name"));
                 if (obj.has("id")) friend.setId(obj.getLong("id"));

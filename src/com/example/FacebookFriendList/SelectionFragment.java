@@ -50,8 +50,16 @@ public class SelectionFragment extends ListFragment implements LoaderManager.Loa
 
     public void setAccessToken(String accessToken) {
         this.accessToken = accessToken;
+    }
 
-//        getLoaderManager().initLoader(0, params, this);
+    public void loadFriends() {
+
+        if(accessToken!=null && accessToken.length()>0) {
+            Bundle params = new Bundle();
+            params.putString("access_token", accessToken);
+            getLoaderManager().initLoader(0, params, this).forceLoad();
+        }
+
     }
 
     public Loader<List<Friend>> onCreateLoader(int id, Bundle args) {
