@@ -139,7 +139,13 @@ public class LoginActivity extends FragmentActivity {
         if (session != null && session.isOpened()) {
             // if the session is already open,
             // try to show the selection fragment
-            showFragment(SELECTION, false);
+//            SelectionFragment selectionFragment = new SelectionFragment();
+//            Bundle params = new Bundle();
+//            params.putString("access_token", "");
+//            selectionFragment.setArguments(params);
+//            FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+//            ft.show(selectionFragment);
+//            ft.commit();
         } else {
             // otherwise present the splash screen
             // and ask the person to login.
@@ -183,8 +189,11 @@ public class LoginActivity extends FragmentActivity {
                 if (session == Session.getActiveSession()) {
 
                     String token = session.getAccessToken();
-                    List<Friend> friends = Friend.getFriends(LoginActivity.this, token);
-                    showFragment(SELECTION, false);
+                    SelectionFragment selectionFragment = (SelectionFragment) fragments[SELECTION];
+                    selectionFragment.setAccessToken(token);
+                    FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+                    ft.show(selectionFragment);
+                    ft.commit();
 
                 }
                 if (response.getError() != null) {
