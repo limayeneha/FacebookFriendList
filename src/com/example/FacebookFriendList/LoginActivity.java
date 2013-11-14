@@ -1,30 +1,26 @@
 package com.example.FacebookFriendList;
 
-import android.graphics.Typeface;
 import android.support.v4.app.*;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
+import android.widget.Toast;
 import com.facebook.*;
 import com.facebook.model.GraphUser;
-import model.Friend;
-import org.json.JSONException;
-
-import java.util.List;
 
 public class LoginActivity extends FragmentActivity {
 
     private static final int SPLASH = 0;
     private static final int SELECTION = 1;
     private static final int SETTINGS = 2;
-    private static final int FRAGMENT_COUNT = SETTINGS +1;
+    private static final int FRAGMENT_COUNT = SETTINGS + 1;
     private MenuItem settings;
 
     private Fragment[] fragments = new Fragment[FRAGMENT_COUNT];
 
     private boolean isResumed = false;
+
 
     private UiLifecycleHelper uiHelper;
     private Session.StatusCallback callback =
@@ -47,17 +43,24 @@ public class LoginActivity extends FragmentActivity {
         uiHelper.onCreate(savedInstanceState);
 
         setContentView(R.layout.main);
-
         FragmentManager fm = getSupportFragmentManager();
-        fragments[SPLASH] = fm.findFragmentById(R.id.splashFragment);
-        fragments[SELECTION] = fm.findFragmentById(R.id.selectionFragment);
-        fragments[SETTINGS] = fm.findFragmentById(R.id.userSettingsFragment);
-
-        FragmentTransaction transaction = fm.beginTransaction();
-        for (int i = 0; i < fragments.length; i++) {
-            transaction.hide(fragments[i]);
+        if (null == savedInstanceState) {
+            fragments[SPLASH] = fm.findFragmentById(R.id.splashFragment);
+            fragments[SELECTION] = fm.findFragmentById(R.id.selectionFragment);
+            fragments[SETTINGS] = fm.findFragmentById(R.id.userSettingsFragment);
+            FragmentTransaction transaction = fm.beginTransaction();
+            transaction.add(fragments[SPLASH], "splash");
+            transaction.add(fragments[SELECTION], "selection");
+            transaction.add(fragments[SETTINGS], "settings");
+            for (int i = 0; i < fragments.length; i++) {
+                transaction.hide(fragments[i]);
+            }
+            transaction.commit();
+        } else {
+            fragments[SPLASH] = fm.findFragmentByTag("splash");
+            fragments[SELECTION] = fm.findFragmentByTag("selection");
+            fragments[SETTINGS] = fm.findFragmentByTag("settings");
         }
-        transaction.commit();
     }
 
     private void showFragment(int fragmentIndex, boolean addToBackStack) {
@@ -137,15 +140,13 @@ public class LoginActivity extends FragmentActivity {
         Session session = Session.getActiveSession();
 
         if (session != null && session.isOpened()) {
-            // if the session is already open,
-            // try to show the selection fragment
-//            SelectionFragment selectionFragment = new SelectionFragment();
-//            Bundle params = new Bundle();
-//            params.putString("access_token", "");
-//            selectionFragment.setArguments(params);
-//            FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-//            ft.show(selectionFragment);
-//            ft.commit();
+            String token = session.getAccessToken();
+            SelectionFragment selectionFragment = (SelectionFragment) fragments[SELECTION];
+            selectionFragment.setAccessToken(token);
+            FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+            ft.show(selectionFragment);
+            ft.commit();
+            if (token != null && token.length() > 0) selectionFragment.loadFriends();
         } else {
             // otherwise present the splash screen
             // and ask the person to login.
@@ -178,36 +179,29 @@ public class LoginActivity extends FragmentActivity {
     }
 
 
-
     private void makeMeRequest(final Session session) {
         Request request = Request.newMeRequest(session, new Request.GraphUserCallback() {
 
             @Override
             public void onCompleted(GraphUser user, Response response) {
-                if(user==null) return;
+                if (user == null) return;
 
                 if (session == Session.getActiveSession()) {
-
                     String token = session.getAccessToken();
                     SelectionFragment selectionFragment = (SelectionFragment) fragments[SELECTION];
                     selectionFragment.setAccessToken(token);
                     FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
                     ft.show(selectionFragment);
                     ft.commit();
-                    if(token!=null && token.length()>0) selectionFragment.loadFriends();
-
-
-
+                    if (token != null && token.length() > 0) selectionFragment.loadFriends();
                 }
                 if (response.getError() != null) {
                     //  handleError(response.getError());
+                    Toast.makeText(LoginActivity.this, "MakeMeRequest Error " + response.getError(), Toast.LENGTH_LONG).show();
                 }
             }
 
         });
         request.executeAsync();
-
     }
-
-
 }

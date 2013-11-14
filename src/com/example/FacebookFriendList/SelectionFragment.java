@@ -1,19 +1,17 @@
 package com.example.FacebookFriendList;
 
 import android.content.Context;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.ListFragment;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
-import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 import com.facebook.widget.ProfilePictureView;
 import model.Friend;
@@ -24,7 +22,6 @@ import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -34,17 +31,20 @@ import java.util.List;
  * Time: 11:22 PM
  * To change this template use File | Settings | File Templates.
  */
-public class SelectionFragment extends ListFragment implements LoaderManager.LoaderCallbacks<List<Friend>>{
+public class SelectionFragment extends Fragment implements LoaderManager.LoaderCallbacks<List<Friend>> {
 
     private static final String TAG = "SelectionFragment";
-    String accessToken="";
+    String accessToken = "";
+    ListView listView;
 
     @Override
     public View onCreateView(LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
+        setRetainInstance(true);
         View view = inflater.inflate(R.layout.selection,
                 container, false);
+        listView = (ListView) view.findViewById(R.id.list);
         return view;
     }
 
@@ -52,9 +52,9 @@ public class SelectionFragment extends ListFragment implements LoaderManager.Loa
         this.accessToken = accessToken;
     }
 
+    //To be called to update friends in the list
     public void loadFriends() {
-
-        if(accessToken!=null && accessToken.length()>0) {
+        if (accessToken != null && accessToken.length() > 0) {
             Bundle params = new Bundle();
             params.putString("access_token", accessToken);
             getLoaderManager().initLoader(0, params, this).forceLoad();
@@ -64,23 +64,22 @@ public class SelectionFragment extends ListFragment implements LoaderManager.Loa
 
     public Loader<List<Friend>> onCreateLoader(int id, Bundle args) {
         FriendsListLoader friendsListLoader = new FriendsListLoader(getActivity(), args.getString("access_token"));
-        return  friendsListLoader;
+        return friendsListLoader;
 
     }
 
     public void onLoadFinished(Loader<List<Friend>> loader, List<Friend> data) {
         // Swap the new cursor in.  (The framework will take care of closing the
         // old cursor once we return.)
-
         FBFriendsArrayAdapter fbFriendsArrayAdapter = new FBFriendsArrayAdapter(getActivity(), data);
-        getListView().setAdapter(fbFriendsArrayAdapter);
+        listView.setAdapter(fbFriendsArrayAdapter);
     }
 
     public void onLoaderReset(Loader<List<Friend>> loader) {
         // This is called when the last Cursor provided to onLoadFinished()
         // above is about to be closed.  We need to make sure we are no
         // longer using it.
-        getListView().setAdapter(null);
+        if (listView != null) listView.setAdapter(null);
     }
 
     private static class FriendsListLoader extends AsyncTaskLoader<List<Friend>> {
